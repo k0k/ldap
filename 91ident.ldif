@@ -1,0 +1,36 @@
+################################################################################
+#
+# Esquema(Schema) que permite incluir el atributo: 'cedula',
+# para los directorios de servicios: ldap-389/Red Hat Directory Server
+# Wilmer Jaramillo M. <wilmer@fedoraproject.org>
+#
+################################################################################
+#  RFC 4517 - IETF
+#  root OID (http://www.iana.org/assignments/enterprise-numbers)
+#  1.3.6.1.4.1.26731	    exclusive root OID
+#  1.3.6.1.4.1.26731.3      Elementos LDAP.
+#  1.3.6.1.4.1.26731.3.1    Atributos.
+#  1.3.6.1.4.1.26731.3.2    Clase de Objeto.
+#
+################################################################################
+dn: cn=schema
+# El atributo 'cedula' es usado para almacenar el serial en formato numerico
+# exclusivamente y no distingue nacionalidad.
+attributeTypes: (
+  1.3.6.1.4.1.26731.3.1.1
+  NAME ( 'cedula' )
+  DESC 'Cedula de identidad'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 
+  SINGLE-VALUE
+  )
+# Clase de objeto 'cedulado' del atributo 'cedula'.
+# Exige la presencia del atributo auxiliar 'cn'.
+objectClasses: (
+  1.3.6.1.4.1.26731.3.2.1
+  NAME 'cedulado' 
+  DESC 'Clase de objeto para cedula de identidad' 
+  SUP top
+  STRUCTURAL
+  MUST ( cedula $ cn )
+)
