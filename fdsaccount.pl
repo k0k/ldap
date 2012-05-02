@@ -21,13 +21,12 @@ use Net::LDAP::Control::Paged;
 use Net::LDAP::Constant qw( LDAP_CONTROL_PAGED );
 
 # FD Server information
-my $fdserver = '192.168.2.2';
-my $fduser = 'uid=XXXXXX,dc=example,dc=gob,dc=ve';
+my $base = 'dc=example,dc=gob,dc=ve';
+my $fdserver = '192.168.1.2';
+my $fduser = 'uid=admin,ou=Administrators,ou=TopologyManagement,o=NetscapeRoot';
 my $fdpass ='XXXXXX';
-my @lists;
 
-# baseDN
-my $base = 'ou=migra,dc=example,dc=gob,dc=ve';
+my @lists;
 my $filter = '(&(objectClass=person)(mail=*))';
 my $page = Net::LDAP::Control::Paged->new( size => 400 );
 my $attrs = [ 'dn','uid', 'mail', 'givenName', 'sn', 'cn' ];
@@ -40,11 +39,11 @@ $fds -> code && die my $mesg -> error;
 print "==> Retrieve entries of $fdserver ...";
 my @args = (
         base => $base,
-		filter => $filter,
-		scope  => 'sub',
-		attrs =>  $attrs,
-		timelimit => 60,
-	 	control  => [ $page ]
+        filter => $filter,
+        scope  => 'sub',
+        attrs =>  $attrs,
+        timelimit => 60,
+        control  => [ $page ]
         );
 
 $fds = $ldap -> search(@args);
@@ -56,20 +55,21 @@ my $numList = @lists;
 
 for (my $i=0; $i<$count; $i++) {
     my $entry = $fds->entry($i);
-	my $dn = $entry->dn; 
+    my $dn = $entry->dn; 
     my $cn = $entry->get_value('cn');
     my $uid = $entry->get_value('uid');$uid = lc($uid);
     my $sn = $entry->get_value('sn');
     my $mail = $entry->get_value('mail');
     my $givenName = $entry->get_value('givenName');
 
-	open(zfile, ">>ldap_users.csv") or die;
-	my ($primernombre,$segundonombre) = split(" ",$givenName);
-	my ($primerapellido,$segundoapellido) = split(" ",$sn);
-	print zfile ("$primernombre,$segundonombre,$primerapellido,$segundoapellido,$mail \n");
+    open(zfile, ">>ldap_users.csv") or die;
+    # Spanish naming customs.
+    my ($primernombre,$segundonombre) = split(" ",$givenName);
+    my ($primerapellido,$segundoapellido) = split(" ",$sn);
+    print zfile ("$primernombre,$segundonombre,$primerapellido,$segundoapellido,$mail \n");
     # You can use this to import users on zimbra, for example:
     # print zfile (ca $mail "" givenName "$givenName" sn "$sn" displayName "$cn");
-	close zfile;
+    close zfile;
 }
 
 $fds = $ldap->unbind;
